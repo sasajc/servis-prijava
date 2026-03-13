@@ -21,7 +21,10 @@ async function sendTelegram(payload: {
 }) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
-  if (!token || !chatId) return
+  if (!token || !chatId) {
+    console.error('[Telegram] missing env vars', { hasToken: !!token, hasChatId: !!chatId })
+    return
+  }
 
   const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, created_at, prijavaId, slikaUrl } = payload
 
@@ -51,21 +54,26 @@ async function sendTelegram(payload: {
       body: JSON.stringify({ chat_id: chatId, photo: slikaUrl, caption: tekst }),
     })
     const photoJson = await photoRes.json()
+    console.log('[Telegram] sendPhoto response:', JSON.stringify(photoJson))
     if (!photoJson.ok) {
       // Fallback: pošalji tekst + link na sliku
       const tekstSLinkom = `${tekst}\n📷 Slika: ${slikaUrl}`
-      await fetch(`${base}/sendMessage`, {
+      const msgRes = await fetch(`${base}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: chatId, text: tekstSLinkom }),
       })
+      const msgJson = await msgRes.json()
+      console.log('[Telegram] sendMessage fallback response:', JSON.stringify(msgJson))
     }
   } else {
-    await fetch(`${base}/sendMessage`, {
+    const msgRes = await fetch(`${base}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text: tekst }),
     })
+    const msgJson = await msgRes.json()
+    console.log('[Telegram] sendMessage response:', JSON.stringify(msgJson))
   }
 }
 
