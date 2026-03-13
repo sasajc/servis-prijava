@@ -28,9 +28,9 @@ async function sendTelegram(payload: {
 
   const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, created_at, prijavaId, slikaUrl } = payload
 
-  const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
+  const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
   const terminStr = zeljeno_vrijeme
-    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
+    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
     : null
 
   const tekst = [
@@ -92,9 +92,9 @@ async function sendEmail(payload: {
   slikaUrl: string | null
 }) {
   const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, created_at, prijavaId, slikaUrl } = payload
-  const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
+  const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
   const terminStr = zeljeno_vrijeme
-    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
+    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
     : '—'
 
   const resend = new Resend(process.env.RESEND_API_KEY)
