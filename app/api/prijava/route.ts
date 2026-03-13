@@ -45,11 +45,21 @@ async function sendTelegram(payload: {
   const base = `https://api.telegram.org/bot${token}`
 
   if (slikaUrl) {
-    await fetch(`${base}/sendPhoto`, {
+    const photoRes = await fetch(`${base}/sendPhoto`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, photo: slikaUrl, caption: tekst }),
     })
+    const photoJson = await photoRes.json()
+    if (!photoJson.ok) {
+      // Fallback: pošalji tekst + link na sliku
+      const tekstSLinkom = `${tekst}\n📷 Slika: ${slikaUrl}`
+      await fetch(`${base}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: tekstSLinkom }),
+      })
+    }
   } else {
     await fetch(`${base}/sendMessage`, {
       method: 'POST',
