@@ -30,12 +30,16 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     setError(null)
+    // Prikaži preview odmah (prije kompresije) da se slika pojavi trenutno na mobitelu
+    const immediatePreview = URL.createObjectURL(file)
+    setFotoPreview(immediatePreview)
     try {
       const compressed = await compressImage(file)
       setFotoFile(compressed)
-      const preview = URL.createObjectURL(compressed)
-      setFotoPreview(preview)
+      URL.revokeObjectURL(immediatePreview)
+      setFotoPreview(URL.createObjectURL(compressed))
     } catch {
+      setFotoPreview(null)
       setError('Greška pri učitavanju slike. Pokušajte ponovo.')
     }
   }
