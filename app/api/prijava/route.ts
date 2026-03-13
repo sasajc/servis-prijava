@@ -15,6 +15,7 @@ async function sendTelegram(payload: {
   prezime_operatera: string
   opis_problema: string
   zeljeno_vrijeme: string | null
+  created_at: string
   prijavaId: string
   slikaUrl: string | null
 }) {
@@ -22,8 +23,9 @@ async function sendTelegram(payload: {
   const chatId = process.env.TELEGRAM_CHAT_ID
   if (!token || !chatId) return
 
-  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, prijavaId, slikaUrl } = payload
+  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, created_at, prijavaId, slikaUrl } = payload
 
+  const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
   const terminStr = zeljeno_vrijeme
     ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
     : null
@@ -31,6 +33,7 @@ async function sendTelegram(payload: {
   const tekst = [
     '🚨 NOVA PRIJAVA SERVISA',
     '',
+    `🕐 Kreirano: ${kreiranoStr}`,
     `🏭 Poduzeće: ${poduzece ?? 'Nepoznato'}`,
     `🖨️ Uređaj: ${tip_sistema ?? '—'} / ${serijski_broj ?? '—'}`,
     `👤 Operater: ${[ime_operatera, prezime_operatera].filter(Boolean).join(' ')}`,
@@ -66,10 +69,12 @@ async function sendEmail(payload: {
   prezime_operatera: string
   opis_problema: string
   zeljeno_vrijeme: string | null
+  created_at: string
   prijavaId: string
   slikaUrl: string | null
 }) {
-  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, prijavaId, slikaUrl } = payload
+  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, created_at, prijavaId, slikaUrl } = payload
+  const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
   const terminStr = zeljeno_vrijeme
     ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
     : '—'
@@ -84,6 +89,7 @@ async function sendEmail(payload: {
       </div>
       <div style="background: #f9f7f5; padding: 24px; border: 1px solid #e5e0d8; border-top: none; border-radius: 0 0 8px 8px;">
         <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px 0; color: #666; width: 140px; font-size: 13px;">Datum prijave</td><td style="padding: 8px 0; font-weight: 600;">${kreiranoStr}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; width: 140px; font-size: 13px;">Poduzeće</td><td style="padding: 8px 0; font-weight: 600;">${poduzece ?? '—'}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Uređaj</td><td style="padding: 8px 0; font-weight: 600;">${tip_sistema ?? '—'}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Serijski broj</td><td style="padding: 8px 0;">${serijski_broj ?? '—'}</td></tr>
@@ -214,7 +220,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       status: 'nova',
       ip_address: ip,
     })
-    .select('id')
+    .select('id, created_at')
     .single()
 
   if (insertError || !insertData) {
@@ -222,7 +228,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Greška pri pohrani prijave.' }, { status: 500 })
   }
 
-  const prijavaId = (insertData as { id: string }).id
+  const prijavaId = (insertData as { id: string; created_at: string }).id
+  const createdAt = (insertData as { id: string; created_at: string }).created_at
 
   // 7. Signed URL za sliku (24h) za notifikacije
   const { data: signedData } = await adminSupabase.storage
@@ -239,6 +246,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     prezime_operatera: prezimeOperatera,
     opis_problema: opisProblema,
     zeljeno_vrijeme: zeljenoVrijeme,
+    created_at: createdAt,
     prijavaId,
     slikaUrl,
   }
