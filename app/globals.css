@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Sprječava iOS zoom na focus input polja */
+input, textarea, select {
+  font-size: 16px;
+}
