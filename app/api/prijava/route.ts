@@ -14,6 +14,7 @@ async function sendTelegram(payload: {
   ime_operatera: string
   prezime_operatera: string
   opis_problema: string
+  zeljeno_vrijeme: string | null
   prijavaId: string
   slikaUrl: string | null
 }) {
@@ -21,7 +22,11 @@ async function sendTelegram(payload: {
   const chatId = process.env.TELEGRAM_CHAT_ID
   if (!token || !chatId) return
 
-  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, prijavaId, slikaUrl } = payload
+  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, prijavaId, slikaUrl } = payload
+
+  const terminStr = zeljeno_vrijeme
+    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
+    : null
 
   const tekst = [
     '🚨 NOVA PRIJAVA SERVISA',
@@ -30,8 +35,9 @@ async function sendTelegram(payload: {
     `🖨️ Uređaj: ${tip_sistema ?? '—'} / ${serijski_broj ?? '—'}`,
     `👤 Operater: ${[ime_operatera, prezime_operatera].filter(Boolean).join(' ')}`,
     `📝 Opis: ${opis_problema || '(bez opisa)'}`,
+    terminStr ? `📅 Željeni termin: ${terminStr}` : null,
     `🆔 ID: ${prijavaId}`,
-  ].join('\n')
+  ].filter(Boolean).join('\n')
 
   const base = `https://api.telegram.org/bot${token}`
 
@@ -59,10 +65,14 @@ async function sendEmail(payload: {
   ime_operatera: string
   prezime_operatera: string
   opis_problema: string
+  zeljeno_vrijeme: string | null
   prijavaId: string
   slikaUrl: string | null
 }) {
-  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, prijavaId, slikaUrl } = payload
+  const { poduzece, tip_sistema, serijski_broj, ime_operatera, prezime_operatera, opis_problema, zeljeno_vrijeme, prijavaId, slikaUrl } = payload
+  const terminStr = zeljeno_vrijeme
+    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })
+    : '—'
 
   const resend = new Resend(process.env.RESEND_API_KEY)
   const subject = `[NOVA PRIJAVA] ${poduzece ?? 'Nepoznato poduzeće'} — ${tip_sistema ?? '—'}`
@@ -79,6 +89,7 @@ async function sendEmail(payload: {
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Serijski broj</td><td style="padding: 8px 0;">${serijski_broj ?? '—'}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Operater</td><td style="padding: 8px 0;">${[ime_operatera, prezime_operatera].filter(Boolean).join(' ')}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px; vertical-align: top;">Opis problema</td><td style="padding: 8px 0;">${opis_problema || '<em style="color:#999">Bez opisa</em>'}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Željeni termin</td><td style="padding: 8px 0;">${terminStr}</td></tr>
         </table>
         ${slikaUrl ? `<div style="margin-top: 16px;"><a href="${slikaUrl}" style="color: #7a4f28;">📷 Pogledaj fotografiju kvara</a></div>` : ''}
         <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e0d8; font-size: 12px; color: #999;">
@@ -113,6 +124,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const opisProblema = (formData.get('opisProblema') as string | null)?.trim() ?? ''
   const imeOperatera = (formData.get('imeOperatera') as string | null)?.trim() ?? ''
   const prezimeOperatera = (formData.get('prezimeOperatera') as string | null)?.trim() ?? ''
+  const zeljenoVrijeme = (formData.get('zeljenoVrijeme') as string | null)?.trim() || null
   const slika = formData.get('slika') as File | null
 
   // 2. Validacija
@@ -197,6 +209,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ime_operatera: imeOperatera,
       prezime_operatera: prezimeOperatera || null,
       opis_problema: opisProblema,
+      zeljeno_vrijeme: zeljenoVrijeme || null,
       slika_storage_path: storagePath,
       status: 'nova',
       ip_address: ip,
@@ -225,6 +238,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     ime_operatera: imeOperatera,
     prezime_operatera: prezimeOperatera,
     opis_problema: opisProblema,
+    zeljeno_vrijeme: zeljenoVrijeme,
     prijavaId,
     slikaUrl,
   }

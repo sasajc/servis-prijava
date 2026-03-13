@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS klijentske_prijave (
   prezime_operatera   text,
   -- Sadržaj prijave
   opis_problema       text NOT NULL DEFAULT '',
+  zeljeno_vrijeme     text,
   slika_storage_path  text,
   -- Workflow status
   status              text NOT NULL DEFAULT 'nova'

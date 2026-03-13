@@ -22,6 +22,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
   const [opisProblema, setOpisProblema] = useState('')
   const [imeOperatera, setImeOperatera] = useState('')
   const [prezimeOperatera, setPrezimeOperatera] = useState('')
+  const [zeljenoVrijeme, setZeljenoVrijeme] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -50,6 +51,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
       fd.append('opisProblema', opisProblema)
       fd.append('imeOperatera', imeOperatera.trim())
       fd.append('prezimeOperatera', prezimeOperatera.trim())
+      fd.append('zeljenoVrijeme', zeljenoVrijeme)
       fd.append('slika', fotoFile)
 
       const res = await fetch('/api/prijava', { method: 'POST', body: fd })
@@ -241,6 +243,19 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                   autoComplete="family-name"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                  Željeni termin servisa
+                </label>
+                <input
+                  type="datetime-local"
+                  value={zeljenoVrijeme}
+                  onChange={(e) => setZeljenoVrijeme(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 [color-scheme:dark]"
+                />
+                <p className="text-xs text-zinc-500 mt-1">Opcionalno — prijedlog termina za servisnu posjetu</p>
+              </div>
             </div>
 
             <div className="flex gap-3">
@@ -293,6 +308,12 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                   <div>
                     <p className="text-xs text-zinc-500 uppercase tracking-wider">Opis</p>
                     <p className="text-zinc-300 text-sm">{opisProblema.slice(0, 200)}{opisProblema.length > 200 ? '...' : ''}</p>
+                  </div>
+                )}
+                {zeljenoVrijeme && (
+                  <div>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider">Željeni termin</p>
+                    <p className="text-zinc-300 text-sm">{new Date(zeljenoVrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' })}</p>
                   </div>
                 )}
               </div>
