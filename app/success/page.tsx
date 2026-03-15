@@ -1,4 +1,11 @@
-export default function SuccessPage() {
+interface Props {
+  searchParams: Promise<{ verified?: string }>
+}
+
+export default async function SuccessPage({ searchParams }: Props) {
+  const { verified } = await searchParams
+  const isVerified = verified === 'true'
+
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-6 text-center">
       {/* Icon */}
@@ -9,9 +16,13 @@ export default function SuccessPage() {
       </div>
 
       {/* Naslov */}
-      <h1 className="text-2xl font-bold text-white mb-3">Prijava zaprimljena!</h1>
+      <h1 className="text-2xl font-bold text-white mb-3">
+        {isVerified ? 'Prijava potvrđena!' : 'Prijava zaprimljena!'}
+      </h1>
       <p className="text-zinc-400 max-w-xs leading-relaxed">
-        Vaša prijava kvara je uspješno poslana. Servisni tim je obaviješten i kontaktirat će vas uskoro.
+        {isVerified
+          ? 'Vaša prijava kvara je potvrđena. Servisni tim je obaviješten i kontaktirat će vas uskoro.'
+          : 'Vaša prijava kvara je uspješno poslana. Servisni tim je obaviješten i kontaktirat će vas uskoro.'}
       </p>
 
       {/* Separator */}

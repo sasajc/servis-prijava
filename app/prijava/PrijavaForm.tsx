@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { compressImage } from '@/lib/imageUtils'
 import type { UredajInfo } from '@/lib/types'
 
@@ -10,10 +9,13 @@ interface Props {
   snPoslan: string | null
 }
 
-type Korak = 1 | 2 | 3 | 4
+type Korak = 1 | 2 | 3 | 4 | 'cekanje_emaila'
+
+function isValidEmail(v: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+}
 
 export default function PrijavaForm({ uredaj, snPoslan }: Props) {
-  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [korak, setKorak] = useState<Korak>(1)
@@ -22,6 +24,9 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
   const [opisProblema, setOpisProblema] = useState('')
   const [imeOperatera, setImeOperatera] = useState('')
   const [prezimeOperatera, setPrezimeOperatera] = useState('')
+  const [telefon, setTelefon] = useState('')
+  const [email, setEmail] = useState('')
+  const [emailTouched, setEmailTouched] = useState(false)
   const [zeljenoVrijeme, setZeljenoVrijeme] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +35,6 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     setError(null)
-    // Prikaži preview odmah (prije kompresije) da se slika pojavi trenutno na mobitelu
     const immediatePreview = URL.createObjectURL(file)
     setFotoPreview(immediatePreview)
     try {
@@ -45,7 +49,8 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
   }
 
   async function handleSubmit() {
-    if (!fotoFile || !imeOperatera.trim()) return
+    if (!fotoFile || !imeOperatera.trim() || !prezimeOperatera.trim() || !telefon.trim() || !email.trim()) return
+    if (!isValidEmail(email)) return
     setSubmitting(true)
     setError(null)
 
@@ -55,6 +60,8 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
       fd.append('opisProblema', opisProblema)
       fd.append('imeOperatera', imeOperatera.trim())
       fd.append('prezimeOperatera', prezimeOperatera.trim())
+      fd.append('telefon', telefon.trim())
+      fd.append('email', email.trim())
       fd.append('zeljenoVrijeme', zeljenoVrijeme)
       fd.append('slika', fotoFile)
 
@@ -71,7 +78,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
         return
       }
 
-      router.push('/success')
+      setKorak('cekanje_emaila')
     } catch {
       setError('Greška mreže. Provjerite internetsku vezu i pokušajte ponovo.')
       setSubmitting(false)
@@ -79,6 +86,8 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
   }
 
   const uredajNaziv = uredaj?.tip_sistema ?? (snPoslan ? `S/N: ${snPoslan}` : null)
+  const korak3Valid = imeOperatera.trim() && prezimeOperatera.trim() && telefon.trim() && email.trim() && isValidEmail(email)
+  const emailError = emailTouched && email && !isValidEmail(email) ? 'Unesite ispravnu e-mail adresu' : null
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col">
@@ -94,21 +103,23 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
         )}
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center justify-center gap-3 py-5">
-        {([1, 2, 3, 4] as Korak[]).map((k) => (
-          <div
-            key={k}
-            className={`w-3 h-3 rounded-full transition-all ${
-              k === korak
-                ? 'bg-amber-600 scale-125'
-                : k < korak
-                ? 'bg-amber-800'
-                : 'bg-zinc-700'
-            }`}
-          />
-        ))}
-      </div>
+      {/* Step indicator — skriven na ekranu čekanja */}
+      {korak !== 'cekanje_emaila' && (
+        <div className="flex items-center justify-center gap-3 py-5">
+          {([1, 2, 3, 4] as (1 | 2 | 3 | 4)[]).map((k) => (
+            <div
+              key={k}
+              className={`rounded-full transition-all duration-300 ${
+                k === korak
+                  ? 'w-3 h-3 bg-amber-500 scale-125'
+                  : k < korak
+                  ? 'w-3 h-3 bg-amber-800'
+                  : 'w-3 h-3 bg-zinc-700'
+              }`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Sadržaj koraka */}
       <div className="flex-1 px-4 pb-8">
@@ -188,7 +199,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 onChange={(e) => setOpisProblema(e.target.value.slice(0, 1000))}
                 placeholder="Npr: Pisač ne ispisuje, pojavljuje se greška E05, boja curi..."
                 rows={6}
-                className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-3 resize-none focus:outline-none focus:border-amber-600 placeholder:text-zinc-500"
+                className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-3 resize-none focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 placeholder:text-zinc-500"
               />
               <p className="text-xs text-zinc-500 text-right mt-1">{opisProblema.length}/1000</p>
             </div>
@@ -212,15 +223,16 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
           </div>
         )}
 
-        {/* KORAK 3 — Operater */}
+        {/* KORAK 3 — Vaši podaci */}
         {korak === 3 && (
           <div className="flex flex-col gap-5">
             <div>
               <h2 className="text-xl font-bold text-white">Vaši podaci</h2>
-              <p className="text-sm text-zinc-400 mt-1">Ime operatera koji prijavljuje kvar.</p>
+              <p className="text-sm text-zinc-400 mt-1">Potrebni za slanje potvrde i kontakt servisnog tima.</p>
             </div>
 
             <div className="flex flex-col gap-4">
+              {/* Ime */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                   Ime <span className="text-red-400">*</span>
@@ -230,23 +242,66 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                   value={imeOperatera}
                   onChange={(e) => setImeOperatera(e.target.value)}
                   placeholder="Unesite ime"
-                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 placeholder:text-zinc-500"
+                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 placeholder:text-zinc-500"
                   autoComplete="given-name"
                 />
               </div>
+
+              {/* Prezime */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                  Prezime
+                  Prezime <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={prezimeOperatera}
                   onChange={(e) => setPrezimeOperatera(e.target.value)}
                   placeholder="Unesite prezime"
-                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 placeholder:text-zinc-500"
+                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 placeholder:text-zinc-500"
                   autoComplete="family-name"
                 />
               </div>
+
+              {/* Mobitel */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                  Broj mobitela <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={telefon}
+                  onChange={(e) => setTelefon(e.target.value)}
+                  placeholder="npr. 091 234 5678"
+                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 placeholder:text-zinc-500"
+                  autoComplete="tel"
+                />
+              </div>
+
+              {/* E-mail */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                  E-mail adresa <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (emailTouched) setEmailTouched(true) }}
+                  onBlur={() => setEmailTouched(true)}
+                  placeholder="ime@tvrtka.hr"
+                  className={`w-full bg-zinc-800 border text-white rounded-xl px-4 py-4 focus:outline-none focus:ring-2 placeholder:text-zinc-500 transition-colors ${
+                    emailError
+                      ? 'border-red-600 focus:border-red-500 focus:ring-red-600/20'
+                      : 'border-zinc-600 focus:border-amber-600 focus:ring-amber-600/20'
+                  }`}
+                  autoComplete="email"
+                />
+                {emailError && (
+                  <p className="text-red-400 text-xs mt-1.5">{emailError}</p>
+                )}
+                <p className="text-xs text-zinc-500 mt-1.5">Na ovu adresu dobit ćete link za potvrdu prijave.</p>
+              </div>
+
+              {/* Željeni termin */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                   Željeni termin servisa
@@ -256,7 +311,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                   value={zeljenoVrijeme}
                   onChange={(e) => setZeljenoVrijeme(e.target.value)}
                   min={new Date().toISOString().slice(0, 16)}
-                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 [color-scheme:dark]"
+                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 [color-scheme:dark]"
                 />
                 <p className="text-xs text-zinc-500 mt-1">Opcionalno — prijedlog termina za servisnu posjetu</p>
               </div>
@@ -273,7 +328,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
               <button
                 type="button"
                 onClick={() => setKorak(4)}
-                disabled={!imeOperatera.trim()}
+                disabled={!korak3Valid}
                 className="flex-1 min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
               >
                 Dalje →
@@ -307,6 +362,14 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 <div>
                   <p className="text-xs text-zinc-500 uppercase tracking-wider">Operater</p>
                   <p className="text-white font-medium">{imeOperatera} {prezimeOperatera}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider">Kontakt</p>
+                  <p className="text-zinc-300 text-sm">{telefon}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider">E-mail</p>
+                  <p className="text-zinc-300 text-sm">{email}</p>
                 </div>
                 {opisProblema && (
                   <div>
@@ -353,6 +416,42 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 )}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* KORAK 'cekanje_emaila' — Provjerite e-mail */}
+        {korak === 'cekanje_emaila' && (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 animate-fade-in">
+            {/* Ikona omotnice */}
+            <div className="w-24 h-24 rounded-full bg-amber-900/30 border-2 border-amber-700 flex items-center justify-center animate-pulse">
+              <svg className="w-12 h-12 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Provjerite e-mail!</h2>
+              <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">
+                Poslali smo poruku na:
+              </p>
+              <p className="text-amber-400 font-semibold mt-1 break-all max-w-xs">{email}</p>
+            </div>
+
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 max-w-xs w-full text-left">
+              <p className="text-sm text-zinc-300 leading-relaxed">
+                Kliknite na link <strong className="text-white">„Potvrdi prijavu"</strong> u e-mailu kako biste finalizirali prijavu i obavijestili servisni tim.
+              </p>
+            </div>
+
+            <div className="w-16 h-px bg-zinc-700" />
+
+            <div className="text-center">
+              <p className="text-xs text-zinc-500">Niste primili e-mail?</p>
+              <p className="text-xs text-zinc-600 mt-0.5">Provjerite spam / junk mapu.</p>
+            </div>
+
+            <div className="w-16 h-px bg-zinc-800" />
+            <p className="text-xs text-zinc-600 uppercase tracking-widest">LOGOKOD d.o.o.</p>
           </div>
         )}
 

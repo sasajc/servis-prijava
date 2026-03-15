@@ -10,14 +10,19 @@ CREATE TABLE IF NOT EXISTS klijentske_prijave (
   poduzece            text,
   -- Operater
   ime_operatera       text NOT NULL,
-  prezime_operatera   text,
+  prezime_operatera   text NOT NULL,
+  email               text NOT NULL,
+  telefon             text NOT NULL,
   -- Sadržaj prijave
   opis_problema       text NOT NULL DEFAULT '',
-  zeljeno_vrijeme     text,
   slika_storage_path  text,
+  zeljeno_vrijeme     timestamptz,
   -- Workflow status
-  status              text NOT NULL DEFAULT 'nova'
-                        CHECK (status IN ('nova', 'u_obradi', 'zatvorena')),
+  status              text NOT NULL DEFAULT 'na_cekanju'
+                        CHECK (status IN ('nova', 'u_obradi', 'zatvorena', 'na_cekanju')),
+  -- E-mail verifikacija
+  verification_token  text UNIQUE,
+  verified_at         timestamptz,
   -- Audit / rate limiting
   ip_address          text,
   -- Timestamps
@@ -32,6 +37,11 @@ CREATE INDEX IF NOT EXISTS idx_klijentske_prijave_ip
 -- Index za status filter (admin pregled u budućnosti)
 CREATE INDEX IF NOT EXISTS idx_klijentske_prijave_status
   ON klijentske_prijave (status, created_at DESC);
+
+-- Index za brzo traženje po verifikacijskom tokenu
+CREATE INDEX IF NOT EXISTS idx_klijentske_prijave_token
+  ON klijentske_prijave (verification_token)
+  WHERE verification_token IS NOT NULL;
 
 -- Auto-update updated_at (reuse existing trigger function ako postoji)
 CREATE TRIGGER klijentske_prijave_updated_at
@@ -48,3 +58,25 @@ CREATE POLICY "serviseri_citaju_prijave" ON klijentske_prijave
 
 -- INSERT: samo via service role (API route) — ne treba RLS policy za anon
 -- Service role automatski bypassa RLS
+
+-- ─── MIGRACIJA (pokrenuti na postojećoj bazi) ────────────────────────────────
+--
+-- ALTER TABLE klijentske_prijave
+--   ADD COLUMN IF NOT EXISTS email text NOT NULL DEFAULT '',
+--   ADD COLUMN IF NOT EXISTS telefon text NOT NULL DEFAULT '',
+--   ADD COLUMN IF NOT EXISTS verification_token text UNIQUE,
+--   ADD COLUMN IF NOT EXISTS verified_at timestamptz;
+--
+-- ALTER TABLE klijentske_prijave
+--   DROP CONSTRAINT klijentske_prijave_status_check;
+-- ALTER TABLE klijentske_prijave
+--   ADD CONSTRAINT klijentske_prijave_status_check
+--   CHECK (status IN ('nova', 'u_obradi', 'zatvorena', 'na_cekanju'));
+--
+-- ALTER TABLE klijentske_prijave
+--   ALTER COLUMN email DROP DEFAULT,
+--   ALTER COLUMN telefon DROP DEFAULT;
+--
+-- CREATE INDEX IF NOT EXISTS idx_klijentske_prijave_token
+--   ON klijentske_prijave (verification_token)
+--   WHERE verification_token IS NOT NULL;
