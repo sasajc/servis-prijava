@@ -132,12 +132,13 @@ export async function sendEmailToLogokod(payload: NotifPayload) {
     </div>
   `
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: 'LOGOKOD Servis <noreply@logokod.hr>',
     to: 'logokod@logokod.hr',
     subject,
     html,
   })
+  console.log('[Resend] sendEmailToLogokod result:', JSON.stringify(result))
 }
 
 // ─── Verifikacijski email korisniku ──────────────────────────────────────────
@@ -190,10 +191,11 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
     </div>
   `
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: 'LOGOKOD Servis <noreply@logokod.hr>',
     to: email,
     subject,
     html,
   })
+  console.log('[Resend] sendVerificationEmail result:', JSON.stringify(result))
 }
