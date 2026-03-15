@@ -43,7 +43,7 @@ export async function sendTelegram(payload: NotifPayload) {
 
   const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
   const terminStr = zeljeno_vrijeme
-    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
+    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'UTC' })
     : null
 
   const tekst = [
@@ -101,7 +101,7 @@ export async function sendEmailToLogokod(payload: NotifPayload) {
 
   const kreiranoStr = new Date(created_at).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
   const terminStr = zeljeno_vrijeme
-    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Zagreb' })
+    ? new Date(zeljeno_vrijeme).toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'UTC' })
     : '—'
 
   const resend = new Resend(process.env.RESEND_API_KEY)
