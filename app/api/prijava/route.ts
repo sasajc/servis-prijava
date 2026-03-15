@@ -137,14 +137,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // 8. Šalji verifikacijski email (async, ne blokira response)
   after(async () => {
-    await sendVerificationEmail({
-      email,
-      ime_operatera: imeOperatera,
-      prezime_operatera: prezimeOperatera,
-      tip_sistema: uredajInfo.tip_sistema,
-      poduzece: uredajInfo.poduzece,
-      verificationToken,
-    })
+    try {
+      await sendVerificationEmail({
+        email,
+        ime_operatera: imeOperatera,
+        prezime_operatera: prezimeOperatera,
+        tip_sistema: uredajInfo.tip_sistema,
+        poduzece: uredajInfo.poduzece,
+        verificationToken,
+      })
+    } catch (err) {
+      console.error('[after] sendVerificationEmail failed:', err)
+    }
   })
 
   return NextResponse.json({ success: true })
