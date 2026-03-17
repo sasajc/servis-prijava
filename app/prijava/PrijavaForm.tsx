@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { compressImage } from '@/lib/imageUtils'
 import type { UredajInfo } from '@/lib/types'
 import LogokodLogo from '@/components/LogokodLogo'
+import DateTimePicker from '@/components/DateTimePicker'
 
 interface Props {
   uredaj: UredajInfo | null
@@ -349,12 +350,10 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                   Željeni termin servisa
                 </label>
-                <input
-                  type="datetime-local"
+                <DateTimePicker
                   value={zeljenoVrijeme}
-                  onChange={(e) => setZeljenoVrijeme(e.target.value)}
+                  onChange={setZeljenoVrijeme}
                   min={new Date().toISOString().slice(0, 16)}
-                  className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 [color-scheme:dark]"
                 />
                 <p className="text-xs text-zinc-500 mt-1">Opcionalno — prijedlog termina za servisnu posjetu</p>
               </div>
