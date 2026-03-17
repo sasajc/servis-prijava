@@ -101,9 +101,14 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
         {uredajNaziv && (
           <div className="mt-2 pt-2 border-t border-zinc-800">
             <p className="text-sm text-amber-400 font-medium">{uredajNaziv}</p>
-            {uredaj?.poduzece && (
-              <p className="text-xs text-zinc-400 mt-0.5">{uredaj.poduzece}</p>
-            )}
+            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+              {uredaj?.poduzece && (
+                <p className="text-xs text-zinc-400">{uredaj.poduzece}</p>
+              )}
+              {uredaj?.serijski_broj && (
+                <p className="text-xs text-zinc-500">S/N: <span className="text-zinc-300 font-mono">{uredaj.serijski_broj}</span></p>
+              )}
+            </div>
           </div>
         )}
       </div>
