@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { compressImage } from '@/lib/imageUtils'
 import type { UredajInfo } from '@/lib/types'
+import LogokodLogo from '@/components/LogokodLogo'
 
 interface Props {
   uredaj: UredajInfo | null
@@ -92,32 +93,65 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Header */}
-      <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-4">
-        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">LOGOKOD d.o.o.</p>
-        <h1 className="text-lg font-bold text-white mt-0.5">Prijava servisa</h1>
+      <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <LogokodLogo size="md" />
+          <span className="text-xs text-zinc-500 font-medium">Prijava servisa</span>
+        </div>
         {uredajNaziv && (
-          <p className="text-sm text-amber-400 mt-1 font-medium">{uredajNaziv}</p>
-        )}
-        {uredaj?.poduzece && (
-          <p className="text-xs text-zinc-400">{uredaj.poduzece}</p>
+          <div className="mt-2 pt-2 border-t border-zinc-800">
+            <p className="text-sm text-amber-400 font-medium">{uredajNaziv}</p>
+            {uredaj?.poduzece && (
+              <p className="text-xs text-zinc-400 mt-0.5">{uredaj.poduzece}</p>
+            )}
+          </div>
         )}
       </div>
 
       {/* Step indicator — skriven na ekranu čekanja */}
       {korak !== 'cekanje_emaila' && (
-        <div className="flex items-center justify-center gap-3 py-5">
-          {([1, 2, 3, 4] as (1 | 2 | 3 | 4)[]).map((k) => (
+        <div className="px-4 pt-5 pb-4">
+          <div className="flex items-start justify-between relative">
+            {/* Connecting track */}
+            <div className="absolute top-4 left-0 right-0 h-px bg-zinc-700 mx-8" />
             <div
-              key={k}
-              className={`rounded-full transition-all duration-300 ${
-                k === korak
-                  ? 'w-3 h-3 bg-amber-500 scale-125'
-                  : k < korak
-                  ? 'w-3 h-3 bg-amber-800'
-                  : 'w-3 h-3 bg-zinc-700'
-              }`}
+              className="absolute top-4 left-0 h-px bg-amber-700 mx-8 transition-all duration-500"
+              style={{ width: `calc(${((typeof korak === 'number' ? korak - 1 : 4) / 3) * 100}% - 0px)`, maxWidth: 'calc(100% - 4rem)' }}
             />
-          ))}
+
+            {(['Foto', 'Opis', 'Podaci', 'Pregled'] as const).map((label, i) => {
+              const stepNum = (i + 1) as 1 | 2 | 3 | 4
+              const isActive = korak === stepNum
+              const isDone = typeof korak === 'number' && korak > stepNum
+
+              return (
+                <div key={label} className="flex flex-col items-center gap-1.5 z-10" style={{ width: '25%' }}>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                      isActive
+                        ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 scale-110'
+                        : isDone
+                        ? 'bg-amber-800 text-amber-200'
+                        : 'bg-zinc-800 border border-zinc-600 text-zinc-500'
+                    }`}
+                  >
+                    {isDone ? (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    ) : (
+                      stepNum
+                    )}
+                  </div>
+                  <span className={`text-xs transition-colors duration-300 ${
+                    isActive ? 'text-amber-400 font-semibold' : isDone ? 'text-amber-700' : 'text-zinc-600'
+                  }`}>
+                    {label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
@@ -152,14 +186,18 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full min-h-[160px] border-2 border-dashed border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-3 text-zinc-400 hover:border-amber-700 hover:text-amber-500 transition-colors"
+                className="w-full min-h-[200px] border-2 border-dashed border-zinc-600 rounded-2xl flex flex-col items-center justify-center gap-3 text-zinc-400 hover:border-amber-600 hover:text-amber-500 hover:bg-amber-950/20 transition-all duration-200 active:scale-[0.99]"
               >
-                <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                </svg>
-                <span className="font-medium">Otvori kameru</span>
-                <span className="text-xs">ili odaberi fotografiju iz galerije</span>
+                <div className="w-16 h-16 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-base">Snimi ili odaberi fotografiju</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">Tapnite za otvaranje kamere ili galerije</p>
+                </div>
               </button>
             )}
 
@@ -423,7 +461,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
         {korak === 'cekanje_emaila' && (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 animate-fade-in">
             {/* Ikona omotnice */}
-            <div className="w-24 h-24 rounded-full bg-amber-900/30 border-2 border-amber-700 flex items-center justify-center animate-pulse">
+            <div className="w-24 h-24 rounded-full bg-amber-900/30 border-2 border-amber-700 flex items-center justify-center animate-glow-pulse">
               <svg className="w-12 h-12 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
               </svg>
@@ -451,7 +489,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
             </div>
 
             <div className="w-16 h-px bg-zinc-800" />
-            <p className="text-xs text-zinc-600 uppercase tracking-widest">LOGOKOD d.o.o.</p>
+            <LogokodLogo size="sm" className="opacity-40" />
           </div>
         )}
 
