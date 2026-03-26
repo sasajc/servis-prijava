@@ -134,7 +134,7 @@ export async function sendEmailToLogokod(payload: NotifPayload) {
 
   const result = await resend.emails.send({
     from: 'LOGOKOD Servis <noreply@logokod.hr>',
-    to: 'logokod@logokod.hr',
+    to: 'servisi@logokod.hr',
     subject,
     html,
   })
