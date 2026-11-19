@@ -143,7 +143,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         ime_operatera: imeOperatera,
         prezime_operatera: prezimeOperatera,
         tip_sistema: uredajInfo.tip_sistema,
-        poduzece: uredajInfo.poduzece,
+        serijski_broj: uredajInfo.serijski_broj ?? sn,
+        telefon,
+        opis_problema: opisProblema,
+        zeljeno_vrijeme: zeljenoVrijeme,
+        slika: Buffer.from(slikaBuffer),
         verificationToken,
       })
     } catch (err) {
