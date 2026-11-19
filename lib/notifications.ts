@@ -186,6 +186,7 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
   // Široki izrez kao na webu: uspravne fotografije inače zauzmu pola maila.
   const fotka = slika
     ? await sharp(slika).rotate().resize(1200, 680, { fit: 'cover', position: 'attention' }).jpeg({ quality: 80 }).toBuffer()
+        .catch(() => slika) // mail se mora poslati i ako obrada slike ne uspije
     : null
   const logo = await readFile(path.join(process.cwd(), 'public', 'email-logo.png'))
 
