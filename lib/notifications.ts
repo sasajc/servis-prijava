@@ -192,12 +192,12 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
 
   const html = `<!DOCTYPE html>
 <html lang="hr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"></head>
-<body style="margin:0;padding:0;background:#09090b;" bgcolor="#09090b">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#09090b" style="background:#09090b;"><tr><td align="center" style="padding:24px 12px;">
+<body style="margin:0;padding:0;background:#ffffff;" bgcolor="#ffffff">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="background:#ffffff;"><tr><td align="center" style="padding:24px 12px;">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
-    <tr><td align="center" style="padding:8px 0 24px;">${logoHtml}</td></tr>
     <tr><td bgcolor="#18181b" style="background:#18181b;border:1px solid #27272a;border-radius:16px;overflow:hidden;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr><td align="center" bgcolor="#09090b" style="background:#09090b;padding:22px 0;">${logoHtml}</td></tr>
         ${fotka ? `<tr><td style="font-size:0;line-height:0;"><img src="cid:prijava-slika" alt="Fotografija kvara" width="600" style="display:block;width:100%;height:auto;border:0;border-radius:16px 16px 0 0;"></td></tr>` : ''}
         <tr><td style="padding:28px 28px 8px;">
           <div style="font-family:Arial,sans-serif;font-size:26px;font-weight:bold;color:#ffffff;line-height:1.25;">Potvrdite prijavu servisa</div>
@@ -208,13 +208,14 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
             ${uredaj ? row('Uređaj', uredaj, true) : ''}
             ${row('Operater', operater, true)}
             ${row('Kontakt', esc(telefon))}
-            ${row('E-mail', esc(email))}
+            ${row('E-mail', `<a href="mailto:${esc(email)}" style="color:#e4e4e7;text-decoration:none;">${esc(email)}</a>`)}
             ${row('Opis', opis_problema ? esc(opis_problema).replace(/\n/g, '<br>') : '<em style="color:#71717a;">Bez opisa</em>')}
             ${zeljeno_vrijeme ? row('Željeni termin', esc(formatTermin(zeljeno_vrijeme))) : ''}
           </table>
         </td></tr>
-        <tr><td align="center" style="padding:28px;">
-          <a href="${verifyUrl}" style="display:block;background:#b45309;color:#ffffff;font-family:Arial,sans-serif;font-weight:bold;font-size:18px;text-decoration:none;text-align:center;padding:18px 24px;border-radius:12px;">Potvrdi prijavu</a>
+        <tr><td align="center" style="padding:28px 28px 0;font-family:Arial,sans-serif;font-size:17px;font-weight:bold;color:#fbbf24;line-height:1.4;">Prijava još nije poslana servisu. Kliknite na gumb ispod kako biste je potvrdili.</td></tr>
+        <tr><td align="center" style="padding:16px 28px 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="#d97706" style="background:#d97706;border-radius:14px;padding:28px 24px;"><a href="${verifyUrl}" style="color:#ffffff;font-family:Arial,sans-serif;font-weight:bold;font-size:26px;letter-spacing:1px;text-decoration:none;display:block;">POTVRDI PRIJAVU &nbsp;&#10140;</a></td></tr></table>
         </td></tr>
         <tr><td style="padding:0 28px 28px;font-family:Arial,sans-serif;font-size:12px;color:#71717a;line-height:1.6;">
           Ako gumb ne radi, kopirajte ovaj link u preglednik:<br>
@@ -223,7 +224,7 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
         </td></tr>
       </table>
     </td></tr>
-    <tr><td align="center" style="padding:20px 0 0;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:#52525b;">LOGOKOD D.O.O. &nbsp;·&nbsp; Inženjering, zastupstva i trgovina</td></tr>
+    <tr><td align="center" style="padding:20px 0 0;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:#a1a1aa;">LOGOKOD D.O.O. &nbsp;·&nbsp; Inženjering, zastupstva i trgovina</td></tr>
   </table>
 </td></tr></table>
 </body></html>`
