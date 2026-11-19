@@ -1,4 +1,7 @@
 import { Resend } from 'resend'
+import sharp from 'sharp'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 
 // ─── Shared payload types ─────────────────────────────────────────────────────
 
@@ -156,17 +159,8 @@ function formatTermin(v: string): string {
   return m ? `${+m[3]}. ${+m[2]}. ${m[1]}. ${m[4]}:${m[5]}` : v
 }
 
-// Logo kao HTML tablica: SVG nije pouzdan u e-mail klijentima.
-const LOGO_BARS = [20, 28, 14, 24, 16, 28]
-const logoHtml = `
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>
-    <td valign="middle" style="padding-right:12px;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        ${LOGO_BARS.map(h => `<td valign="middle" style="padding-right:3px;"><div style="width:4px;height:${h * 1.5}px;background:#f59e0b;border-radius:2px;font-size:0;line-height:0;">&nbsp;</div></td>`).join('')}
-      </tr></table>
-    </td>
-    <td valign="middle" style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:34px;letter-spacing:3px;color:#f59e0b;">LOGOKOD</td>
-  </tr></table>`
+// Logo je PNG (SVG i div-ovi nisu pouzdani u Outlooku); slika se šalje kao inline privitak.
+const logoHtml = '<img src="cid:logo" alt="LOGOKOD" width="260" style="display:block;width:260px;height:auto;border:0;margin:0 auto;">'
 
 export async function sendVerificationEmail(payload: VerificationEmailPayload) {
   const {
@@ -189,6 +183,12 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
     .filter(Boolean).map(x => esc(x as string)).join(' &nbsp;·&nbsp; ')
   const operater = esc(`${ime_operatera} ${prezime_operatera}`)
 
+  // Široki izrez kao na webu: uspravne fotografije inače zauzmu pola maila.
+  const fotka = slika
+    ? await sharp(slika).rotate().resize(1200, 680, { fit: 'cover', position: 'attention' }).jpeg({ quality: 80 }).toBuffer()
+    : null
+  const logo = await readFile(path.join(process.cwd(), 'public', 'email-logo.png'))
+
   const html = `<!DOCTYPE html>
 <html lang="hr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"></head>
 <body style="margin:0;padding:0;background:#09090b;" bgcolor="#09090b">
@@ -197,7 +197,7 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
     <tr><td align="center" style="padding:8px 0 24px;">${logoHtml}</td></tr>
     <tr><td bgcolor="#18181b" style="background:#18181b;border:1px solid #27272a;border-radius:16px;overflow:hidden;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-        ${slika ? `<tr><td style="font-size:0;line-height:0;"><img src="cid:prijava-slika" alt="Fotografija kvara" width="600" style="display:block;width:100%;height:auto;border:0;border-radius:16px 16px 0 0;"></td></tr>` : ''}
+        ${fotka ? `<tr><td style="font-size:0;line-height:0;"><img src="cid:prijava-slika" alt="Fotografija kvara" width="600" style="display:block;width:100%;height:auto;border:0;border-radius:16px 16px 0 0;"></td></tr>` : ''}
         <tr><td style="padding:28px 28px 8px;">
           <div style="font-family:Arial,sans-serif;font-size:26px;font-weight:bold;color:#ffffff;line-height:1.25;">Potvrdite prijavu servisa</div>
           <div style="font-family:Arial,sans-serif;font-size:16px;color:#a1a1aa;line-height:1.5;margin-top:10px;">Pozdrav <strong style="color:#e4e4e7;">${operater}</strong>, primili smo Vašu prijavu kvara. Provjerite podatke i potvrdite prijavu.</div>
@@ -232,7 +232,10 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
     to: email,
     subject,
     html,
-    attachments: slika ? [{ filename: 'kvar.jpg', content: slika, contentId: 'prijava-slika' }] : undefined,
+    attachments: [
+      { filename: 'logo.png', content: logo, contentId: 'logo' },
+      ...(fotka ? [{ filename: 'kvar.jpg', content: fotka, contentId: 'prijava-slika' }] : []),
+    ],
   })
   console.log('[Resend] sendVerificationEmail result:', JSON.stringify(result))
 }
