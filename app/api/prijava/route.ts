@@ -16,7 +16,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Neispravan zahtjev.' }, { status: 400 })
   }
 
-  const sn = (formData.get('sn') as string | null)?.trim() || null
+  const rawSn = (formData.get('sn') as string | null)?.trim().slice(0, 64) || null
+  const sn = rawSn?.toUpperCase() ?? null
+  const uredajOpisRucnoRaw = (formData.get('uredajOpisRucno') as string | null)?.trim().slice(0, 300) || null
   const opisProblema = (formData.get('opisProblema') as string | null)?.trim() ?? ''
   const imeOperatera = (formData.get('imeOperatera') as string | null)?.trim() ?? ''
   const prezimeOperatera = (formData.get('prezimeOperatera') as string | null)?.trim() ?? ''
@@ -75,7 +77,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data } = await adminSupabase
       .from('instalirani_uredaji')
       .select('"Tip pisača", "S/N pisača", "Poduzeće"')
-      .eq('"S/N pisača"', sn)
+      .in('"S/N pisača"', [rawSn, sn]) // baza može čuvati S/N kako je upisan ili velikim slovima
+      .limit(1)
       .maybeSingle()
 
     if (data) {
@@ -85,6 +88,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         poduzece: (data as Record<string, string | null>)['Poduzeće'] ?? null,
       }
     }
+  }
+
+  // Ručni opis vrijedi samo kad uređaj nije pronađen u bazi; tada je obavezan
+  const uredajOpisRucno = uredajInfo.serijski_broj ? null : uredajOpisRucnoRaw
+  if (!uredajInfo.serijski_broj && !uredajOpisRucno) {
+    return NextResponse.json({ error: 'Opišite uređaj (poduzeće, naziv ili lokacija).' }, { status: 400 })
   }
 
   // 5. Upload slike u Supabase Storage
@@ -116,6 +125,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       tip_sistema: uredajInfo.tip_sistema,
       serijski_broj: uredajInfo.serijski_broj,
       poduzece: uredajInfo.poduzece,
+      uredaj_opis_rucno: uredajOpisRucno,
       ime_operatera: imeOperatera,
       prezime_operatera: prezimeOperatera,
       email,
@@ -143,7 +153,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         ime_operatera: imeOperatera,
         prezime_operatera: prezimeOperatera,
         tip_sistema: uredajInfo.tip_sistema,
-        serijski_broj: uredajInfo.serijski_broj ?? sn,
+        serijski_broj: uredajInfo.serijski_broj,
+        sn_poslan: sn,
+        uredaj_opis_rucno: uredajOpisRucno,
         telefon,
         opis_problema: opisProblema,
         zeljeno_vrijeme: zeljenoVrijeme,

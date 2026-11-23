@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS klijentske_prijave (
   tip_sistema         text,
   serijski_broj       text,
   poduzece            text,
+  -- Ručni opis uređaja kad S/N nije pronađen u bazi
+  uredaj_opis_rucno   text,
   -- Operater
   ime_operatera       text NOT NULL,
   prezime_operatera   text NOT NULL,
@@ -60,6 +62,9 @@ CREATE POLICY "serviseri_citaju_prijave" ON klijentske_prijave
 -- Service role automatski bypassa RLS
 
 -- ─── MIGRACIJA (pokrenuti na postojećoj bazi) ────────────────────────────────
+--
+-- Prijava bez QR koda (ručni opis uređaja):
+-- ALTER TABLE klijentske_prijave ADD COLUMN IF NOT EXISTS uredaj_opis_rucno text;
 --
 -- ALTER TABLE klijentske_prijave
 --   ADD COLUMN IF NOT EXISTS email text NOT NULL DEFAULT '',
