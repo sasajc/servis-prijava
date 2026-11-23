@@ -238,7 +238,7 @@ export default function DateTimePicker({ value, onChange, min, className = '' }:
                       disabled={isDayDisabled(day)}
                       className={`w-8 h-8 rounded-lg text-sm font-medium transition-all duration-100 ${
                         isSelected(day)
-                          ? 'bg-amber-500 text-white font-bold shadow-md shadow-amber-500/40 scale-105'
+                          ? 'bg-amber-500 text-on-accent font-bold shadow-md shadow-amber-500/40 scale-105'
                           : isDayDisabled(day)
                           ? 'text-zinc-700 cursor-not-allowed'
                           : isToday(day)
@@ -327,7 +327,7 @@ export default function DateTimePicker({ value, onChange, min, className = '' }:
               type="button"
               onClick={() => setOpen(false)}
               disabled={!selectedDate}
-              className="flex-1 py-2.5 text-sm text-white font-semibold bg-amber-700 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
+              className="flex-1 py-2.5 text-sm text-on-accent font-semibold bg-amber-700 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors"
             >
               Potvrdi
             </button>

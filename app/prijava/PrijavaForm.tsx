@@ -5,6 +5,7 @@ import { compressImage } from '@/lib/imageUtils'
 import type { UredajInfo } from '@/lib/types'
 import LogokodLogo from '@/components/LogokodLogo'
 import DateTimePicker from '@/components/DateTimePicker'
+import ThemeToggle from '@/components/ThemeToggle'
 
 interface Props {
   uredaj: UredajInfo | null
@@ -133,7 +134,10 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
       <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-3">
         <div className="flex items-center justify-between">
           <LogokodLogo size="md" />
-          <span className="text-xs text-zinc-500 font-medium">Prijava servisa</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-500 font-medium">Prijava servisa</span>
+            <ThemeToggle />
+          </div>
         </div>
         {uredajNaziv && korak !== 0 && (
           <div className="mt-2 pt-2 border-t border-zinc-800">
@@ -171,7 +175,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
                       isActive
-                        ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 scale-110'
+                        ? 'bg-amber-500 text-on-accent shadow-lg shadow-amber-500/30 scale-110'
                         : isDone
                         ? 'bg-amber-800 text-amber-200'
                         : 'bg-zinc-800 border border-zinc-600 text-zinc-500'
@@ -234,7 +238,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 <button
                   type="button"
                   onClick={() => { setUredajLokalni(pronadjen); setKorak(1) }}
-                  className="w-full min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
+                  className="w-full min-h-[56px] bg-amber-700 text-on-accent font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
                 >
                   Da, to je moj uređaj
                 </button>
@@ -267,7 +271,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                   type="button"
                   onClick={() => { setUredajLokalni(null); setKorak(1) }}
                   disabled={!uredajOpis.trim()}
-                  className="w-full min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
+                  className="w-full min-h-[56px] bg-amber-700 text-on-accent font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
                 >
                   Nastavi bez identifikacije
                 </button>
@@ -277,7 +281,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 type="button"
                 onClick={provjeriSn}
                 disabled={!snUnos.trim() || lookupLoading}
-                className="w-full min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
+                className="w-full min-h-[56px] bg-amber-700 text-on-accent font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
               >
                 {lookupLoading ? 'Provjeravam...' : 'Provjeri'}
               </button>
@@ -353,7 +357,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 type="button"
                 onClick={() => setKorak(2)}
                 disabled={!fotoFile}
-                className="flex-1 min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
+                className="flex-1 min-h-[56px] bg-amber-700 text-on-accent font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
               >
                 Dalje →
               </button>
@@ -391,7 +395,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
               <button
                 type="button"
                 onClick={() => setKorak(3)}
-                className="flex-1 min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
+                className="flex-1 min-h-[56px] bg-amber-700 text-on-accent font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
               >
                 Dalje →
               </button>
@@ -503,7 +507,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 type="button"
                 onClick={() => setKorak(4)}
                 disabled={!korak3Valid}
-                className="flex-1 min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
+                className="flex-1 min-h-[56px] bg-amber-700 text-on-accent font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
               >
                 Dalje →
               </button>
@@ -575,7 +579,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex-1 min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-60 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 min-h-[56px] bg-amber-700 text-on-accent font-bold text-lg rounded-xl disabled:opacity-60 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>

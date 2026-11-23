@@ -17,12 +17,12 @@ export default function LogokodLogo({ className = '', size = 'md' }: LogokodLogo
       aria-label="Logokod"
     >
       {/* Barcode mark — 6 vertical bars of varying heights */}
-      <rect x="0"  y="4"  width="3" height="20" rx="1" fill="#f59e0b" />
-      <rect x="5"  y="0"  width="2" height="28" rx="1" fill="#f59e0b" />
-      <rect x="9"  y="7"  width="3" height="14" rx="1" fill="#f59e0b" />
-      <rect x="14" y="2"  width="2" height="24" rx="1" fill="#f59e0b" />
-      <rect x="18" y="6"  width="3" height="16" rx="1" fill="#f59e0b" />
-      <rect x="23" y="0"  width="2" height="28" rx="1" fill="#f59e0b" />
+      <rect x="0"  y="4"  width="3" height="20" rx="1" fill="var(--logo-color)" />
+      <rect x="5"  y="0"  width="2" height="28" rx="1" fill="var(--logo-color)" />
+      <rect x="9"  y="7"  width="3" height="14" rx="1" fill="var(--logo-color)" />
+      <rect x="14" y="2"  width="2" height="24" rx="1" fill="var(--logo-color)" />
+      <rect x="18" y="6"  width="3" height="16" rx="1" fill="var(--logo-color)" />
+      <rect x="23" y="0"  width="2" height="28" rx="1" fill="var(--logo-color)" />
 
       {/* Wordmark */}
       <text
@@ -32,7 +32,7 @@ export default function LogokodLogo({ className = '', size = 'md' }: LogokodLogo
         fontWeight="900"
         fontSize="17"
         letterSpacing="1.5"
-        fill="#f59e0b"
+        fill="var(--logo-color)"
       >
         LOGOKOD
       </text>
