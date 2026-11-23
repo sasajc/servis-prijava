@@ -11,7 +11,7 @@ interface Props {
   snPoslan: string | null
 }
 
-type Korak = 1 | 2 | 3 | 4 | 'cekanje_emaila'
+type Korak = 0 | 1 | 2 | 3 | 4 | 'cekanje_emaila'
 
 function isValidEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
@@ -20,7 +20,16 @@ function isValidEmail(v: string) {
 export default function PrijavaForm({ uredaj, snPoslan }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [korak, setKorak] = useState<Korak>(1)
+  const [korak, setKorak] = useState<Korak>(uredaj ? 1 : 0)
+  // Korak 0 (identifikacija uređaja) se prikazuje samo kad QR/S/N nije prepoznat
+  const imaKorakUredaj = !uredaj
+  const [snUnos, setSnUnos] = useState(snPoslan ?? '')
+  const [uredajLokalni, setUredajLokalni] = useState<UredajInfo | null>(uredaj)
+  const [pronadjen, setPronadjen] = useState<UredajInfo | null>(null)
+  const [snNijePronadjen, setSnNijePronadjen] = useState(false)
+  const [uredajOpis, setUredajOpis] = useState('')
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupError, setLookupError] = useState<string | null>(null)
   const [fotoFile, setFotoFile] = useState<File | null>(null)
   const [fotoPreview, setFotoPreview] = useState<string | null>(null)
   const [opisProblema, setOpisProblema] = useState('')
@@ -32,6 +41,30 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
   const [zeljenoVrijeme, setZeljenoVrijeme] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  async function provjeriSn() {
+    const sn = snUnos.trim()
+    if (!sn) return
+    setLookupLoading(true)
+    setLookupError(null)
+    setPronadjen(null)
+    setSnNijePronadjen(false)
+    try {
+      const res = await fetch(`/api/uredaj?sn=${encodeURIComponent(sn)}`)
+      const json = await res.json()
+      if (!res.ok) {
+        setLookupError(json.error ?? 'Greška pri provjeri. Pokušajte ponovo.')
+      } else if (json.uredaj) {
+        setPronadjen(json.uredaj as UredajInfo)
+      } else {
+        setSnNijePronadjen(true)
+      }
+    } catch {
+      setLookupError('Greška mreže. Provjerite internetsku vezu i pokušajte ponovo.')
+    } finally {
+      setLookupLoading(false)
+    }
+  }
 
   async function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -58,7 +91,9 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
 
     try {
       const fd = new FormData()
-      if (snPoslan) fd.append('sn', snPoslan)
+      const sn = uredajLokalni?.serijski_broj ?? snUnos.trim()
+      if (sn) fd.append('sn', sn)
+      if (!uredajLokalni && uredajOpis.trim()) fd.append('uredajOpisRucno', uredajOpis.trim())
       fd.append('opisProblema', opisProblema)
       fd.append('imeOperatera', imeOperatera.trim())
       fd.append('prezimeOperatera', prezimeOperatera.trim())
@@ -87,7 +122,8 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
     }
   }
 
-  const uredajNaziv = uredaj?.tip_sistema ?? (snPoslan ? `S/N: ${snPoslan}` : null)
+  const snPrikaz = snUnos.trim() || snPoslan
+  const uredajNaziv = uredajLokalni?.tip_sistema ?? (uredajOpis.trim() || (snPrikaz ? `S/N: ${snPrikaz}` : null))
   const korak3Valid = imeOperatera.trim() && prezimeOperatera.trim() && telefon.trim() && email.trim() && isValidEmail(email)
   const emailError = emailTouched && email && !isValidEmail(email) ? 'Unesite ispravnu e-mail adresu' : null
 
@@ -99,15 +135,15 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
           <LogokodLogo size="md" />
           <span className="text-xs text-zinc-500 font-medium">Prijava servisa</span>
         </div>
-        {uredajNaziv && (
+        {uredajNaziv && korak !== 0 && (
           <div className="mt-2 pt-2 border-t border-zinc-800">
             <p className="text-sm text-amber-400 font-medium">{uredajNaziv}</p>
             <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-              {uredaj?.poduzece && (
-                <p className="text-xs text-zinc-400">{uredaj.poduzece}</p>
+              {uredajLokalni?.poduzece && (
+                <p className="text-xs text-zinc-400">{uredajLokalni.poduzece}</p>
               )}
-              {uredaj?.serijski_broj && (
-                <p className="text-xs text-zinc-500">S/N: <span className="text-zinc-300 font-mono">{uredaj.serijski_broj}</span></p>
+              {uredajLokalni?.serijski_broj && (
+                <p className="text-xs text-zinc-500">S/N: <span className="text-zinc-300 font-mono">{uredajLokalni.serijski_broj}</span></p>
               )}
             </div>
           </div>
@@ -115,7 +151,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
       </div>
 
       {/* Step indicator — skriven na ekranu čekanja */}
-      {korak !== 'cekanje_emaila' && (
+      {korak !== 'cekanje_emaila' && korak !== 0 && (
         <div className="px-4 pt-5 pb-4">
           <div className="flex items-start justify-between relative">
             {/* Connecting track */}
@@ -163,6 +199,91 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
 
       {/* Sadržaj koraka */}
       <div className="flex-1 px-4 pb-8">
+
+        {/* KORAK 0 — Identifikacija uređaja (kad nema QR koda) */}
+        {korak === 0 && (
+          <div className="flex flex-col gap-5 pt-5">
+            <div>
+              <h2 className="text-xl font-bold text-white">Koji je uređaj u kvaru?</h2>
+              <p className="text-sm text-zinc-400 mt-1">Upišite serijski broj (S/N) s pločice na uređaju.</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Serijski broj</label>
+              <input
+                type="text"
+                value={snUnos}
+                onChange={(e) => { setSnUnos(e.target.value); setPronadjen(null); setSnNijePronadjen(false); setLookupError(null) }}
+                onKeyDown={(e) => { if (e.key === 'Enter') provjeriSn() }}
+                placeholder="npr. PX-2043-1187"
+                className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 placeholder:text-zinc-500"
+                autoCapitalize="characters"
+                autoCorrect="off"
+              />
+            </div>
+
+            {lookupError && <p className="text-red-400 text-sm bg-red-950/50 border border-red-800 rounded-lg px-3 py-2">{lookupError}</p>}
+
+            {pronadjen ? (
+              <div className="flex flex-col gap-3">
+                <div className="bg-zinc-900 border border-amber-700 rounded-2xl px-4 py-4">
+                  <p className="text-amber-400 font-semibold">{pronadjen.tip_sistema ?? 'Uređaj'}</p>
+                  {pronadjen.poduzece && <p className="text-sm text-zinc-300">{pronadjen.poduzece}</p>}
+                  <p className="text-xs text-zinc-500 mt-1">S/N: <span className="font-mono text-zinc-300">{pronadjen.serijski_broj}</span></p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setUredajLokalni(pronadjen); setKorak(1) }}
+                  className="w-full min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
+                >
+                  Da, to je moj uređaj
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setPronadjen(null); setSnUnos('') }}
+                  className="w-full min-h-[48px] bg-zinc-800 text-zinc-300 font-semibold rounded-xl hover:bg-zinc-700 transition-colors"
+                >
+                  Ne, upiši ponovo
+                </button>
+              </div>
+            ) : snNijePronadjen ? (
+              <div className="flex flex-col gap-3">
+                <p className="text-amber-400 text-sm bg-amber-950/30 border border-amber-800 rounded-lg px-3 py-2">
+                  Serijski broj nije pronađen. Provjerite unos ili opišite uređaj.
+                </p>
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                    Poduzeće / naziv uređaja / lokacija <span className="text-red-400">*</span>
+                  </label>
+                  <textarea
+                    value={uredajOpis}
+                    onChange={(e) => setUredajOpis(e.target.value.slice(0, 300))}
+                    rows={3}
+                    placeholder="Npr: Pekara d.o.o., pisač na liniji 2"
+                    className="w-full bg-zinc-800 border border-zinc-600 text-white rounded-xl px-4 py-3 resize-none focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 placeholder:text-zinc-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setUredajLokalni(null); setKorak(1) }}
+                  disabled={!uredajOpis.trim()}
+                  className="w-full min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
+                >
+                  Nastavi bez identifikacije
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={provjeriSn}
+                disabled={!snUnos.trim() || lookupLoading}
+                className="w-full min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
+              >
+                {lookupLoading ? 'Provjeravam...' : 'Provjeri'}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* KORAK 1 — Fotografija */}
         {korak === 1 && (
@@ -218,14 +339,25 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
 
             {error && <p className="text-red-400 text-sm bg-red-950/50 border border-red-800 rounded-lg px-3 py-2">{error}</p>}
 
-            <button
-              type="button"
-              onClick={() => setKorak(2)}
-              disabled={!fotoFile}
-              className="w-full min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
-            >
-              Dalje →
-            </button>
+            <div className="flex gap-3">
+              {imaKorakUredaj && (
+                <button
+                  type="button"
+                  onClick={() => setKorak(0)}
+                  className="min-h-[56px] px-6 bg-zinc-800 text-zinc-300 font-semibold rounded-xl hover:bg-zinc-700 transition-colors"
+                >
+                  ← Uređaj
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setKorak(2)}
+                disabled={!fotoFile}
+                className="flex-1 min-h-[56px] bg-amber-700 text-white font-bold text-lg rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-amber-600 transition-colors"
+              >
+                Dalje →
+              </button>
+            </div>
           </div>
         )}
 
@@ -398,7 +530,7 @@ export default function PrijavaForm({ uredaj, snPoslan }: Props) {
                   <div>
                     <p className="text-xs text-zinc-500 uppercase tracking-wider">Uređaj</p>
                     <p className="text-white font-medium">{uredajNaziv}</p>
-                    {uredaj?.poduzece && <p className="text-sm text-zinc-400">{uredaj.poduzece}</p>}
+                    {uredajLokalni?.poduzece && <p className="text-sm text-zinc-400">{uredajLokalni.poduzece}</p>}
                   </div>
                 )}
                 <div>

@@ -52,7 +52,7 @@ export default async function VerifyPage({ searchParams }: Props) {
 
   const { data: prijava } = await adminSupabase
     .from('klijentske_prijave')
-    .select('id, created_at, verified_at, ime_operatera, prezime_operatera, email, telefon, opis_problema, zeljeno_vrijeme, poduzece, tip_sistema, serijski_broj, slika_storage_path')
+    .select('id, created_at, verified_at, ime_operatera, prezime_operatera, email, telefon, opis_problema, zeljeno_vrijeme, poduzece, tip_sistema, serijski_broj, sn_poslan, uredaj_opis_rucno, slika_storage_path')
     .eq('verification_token', token)
     .maybeSingle()
 
@@ -112,6 +112,8 @@ export default async function VerifyPage({ searchParams }: Props) {
     poduzece: prijava.poduzece,
     tip_sistema: prijava.tip_sistema,
     serijski_broj: prijava.serijski_broj,
+    sn_poslan: prijava.sn_poslan ?? null,
+    uredaj_opis_rucno: prijava.uredaj_opis_rucno ?? null,
     ime_operatera: prijava.ime_operatera,
     prezime_operatera: prijava.prezime_operatera ?? '',
     email: prijava.email,

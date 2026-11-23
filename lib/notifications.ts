@@ -9,6 +9,8 @@ export interface NotifPayload {
   poduzece: string | null
   tip_sistema: string | null
   serijski_broj: string | null
+  sn_poslan: string | null
+  uredaj_opis_rucno: string | null
   ime_operatera: string
   prezime_operatera: string
   email: string
@@ -26,11 +28,18 @@ export interface VerificationEmailPayload {
   prezime_operatera: string
   tip_sistema: string | null
   serijski_broj: string | null
+  sn_poslan: string | null
+  uredaj_opis_rucno: string | null
   telefon: string
   opis_problema: string
   zeljeno_vrijeme: string | null
   slika: Buffer | null
   verificationToken: string
+}
+
+// Kad uređaj nije u bazi (nema S/N-a iz baze), servis mora vidjeti što je klijent upisao
+function uredajNeidentificiran(p: { sn_poslan: string | null; uredaj_opis_rucno: string | null }): string {
+  return `Uređaj nije identificiran — S/N: ${p.sn_poslan ?? '—'}, opis: ${p.uredaj_opis_rucno ?? '—'}`
 }
 
 // ─── Telegram ────────────────────────────────────────────────────────────────
@@ -58,7 +67,9 @@ export async function sendTelegram(payload: NotifPayload) {
     '',
     `🕐 Kreirano: ${kreiranoStr}`,
     `🏭 Poduzeće: ${poduzece ?? 'Nepoznato'}`,
-    `🖨️ Uređaj: ${tip_sistema ?? '—'} / ${serijski_broj ?? '—'}`,
+    serijski_broj
+      ? `🖨️ Uređaj: ${tip_sistema ?? '—'} / ${serijski_broj}`
+      : `⚠️ ${uredajNeidentificiran(payload)}`,
     `👤 Operater: ${[ime_operatera, prezime_operatera].filter(Boolean).join(' ')}`,
     `📞 Telefon: ${telefon}`,
     `✉️ E-mail: ${email}`,
@@ -112,7 +123,9 @@ export async function sendEmailToLogokod(payload: NotifPayload) {
     : '—'
 
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const subject = `[POTVRĐENA PRIJAVA] ${poduzece ?? 'Nepoznato poduzeće'} — ${tip_sistema ?? '—'}`
+  const subject = serijski_broj
+    ? `[POTVRĐENA PRIJAVA] ${poduzece ?? 'Nepoznato poduzeće'} — ${tip_sistema ?? '—'}`
+    : `[POTVRĐENA PRIJAVA] [NEIDENTIFICIRAN UREĐAJ] ${payload.uredaj_opis_rucno ?? '—'}`
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
@@ -123,8 +136,10 @@ export async function sendEmailToLogokod(payload: NotifPayload) {
         <table style="width: 100%; border-collapse: collapse;">
           <tr><td style="padding: 8px 0; color: #666; width: 140px; font-size: 13px;">Datum prijave</td><td style="padding: 8px 0; font-weight: 600;">${kreiranoStr}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Poduzeće</td><td style="padding: 8px 0; font-weight: 600;">${poduzece ?? '—'}</td></tr>
-          <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Uređaj</td><td style="padding: 8px 0; font-weight: 600;">${tip_sistema ?? '—'}</td></tr>
-          <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Serijski broj</td><td style="padding: 8px 0;">${serijski_broj ?? '—'}</td></tr>
+          ${serijski_broj
+            ? `<tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Uređaj</td><td style="padding: 8px 0; font-weight: 600;">${esc(tip_sistema ?? '—')}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Serijski broj</td><td style="padding: 8px 0;">${esc(serijski_broj)}</td></tr>`
+            : `<tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Uređaj</td><td style="padding: 8px 0; font-weight: 600; color: #b45309;">⚠️ ${esc(uredajNeidentificiran(payload))}</td></tr>`}
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Operater</td><td style="padding: 8px 0;">${[ime_operatera, prezime_operatera].filter(Boolean).join(' ')}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">Telefon</td><td style="padding: 8px 0;">${telefon}</td></tr>
           <tr><td style="padding: 8px 0; color: #666; font-size: 13px;">E-mail</td><td style="padding: 8px 0;">${email}</td></tr>
@@ -179,7 +194,9 @@ export async function sendVerificationEmail(payload: VerificationEmailPayload) {
   const row = (l: string, v: string, strong = false) =>
     `<tr><td style="${label}">${l}</td></tr><tr><td style="${value}${strong ? 'font-weight:bold;font-size:18px;color:#ffffff;' : ''}">${v}</td></tr>`
 
-  const uredaj = [tip_sistema, serijski_broj ? `S/N: ${serijski_broj}` : null]
+  const uredaj = (serijski_broj
+    ? [tip_sistema, `S/N: ${serijski_broj}`]
+    : [payload.uredaj_opis_rucno, payload.sn_poslan ? `S/N: ${payload.sn_poslan}` : null])
     .filter(Boolean).map(x => esc(x as string)).join(' &nbsp;·&nbsp; ')
   const operater = esc(`${ime_operatera} ${prezime_operatera}`)
 

@@ -1,3 +1,10 @@
+## Ulazi u prijavu
+
+- `/prijava` — bez QR koda: prvi korak je "Uređaj" (unos S/N-a s pločice, provjera preko `/api/uredaj`). Ako S/N nije u bazi, klijent opisuje uređaj ručno (`uredaj_opis_rucno`), a servis u obavijesti vidi "Uređaj nije identificiran".
+- `/prijava?sn=<S/N>` — QR kod: ako je S/N u bazi, korak "Uređaj" se preskače. Za QR nije potrebna izmjena koda, samo URL s `?sn=`.
+
+Prije deploya pokrenuti migraciju iz `supabase/klijentske_prijave.sql` (stupac `uredaj_opis_rucno`).
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

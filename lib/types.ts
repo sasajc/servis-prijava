@@ -6,6 +6,7 @@ export interface KlijentskaPrijava {
   tip_sistema: string | null
   serijski_broj: string | null
   poduzece: string | null
+  uredaj_opis_rucno: string | null
   ime_operatera: string
   prezime_operatera: string | null
   email: string
