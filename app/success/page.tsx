@@ -25,6 +25,15 @@ export default async function SuccessPage({ searchParams }: Props) {
           : 'Vaša prijava kvara je uspješno poslana. Servisni tim je obaviješten i kontaktirat će vas uskoro.'}
       </p>
 
+      {isVerified && process.env.NEXT_PUBLIC_PORTAL_URL && (
+        <a
+          href={process.env.NEXT_PUBLIC_PORTAL_URL}
+          className="mt-8 min-h-[56px] px-8 inline-flex items-center bg-amber-700 text-white font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
+        >
+          Pratite prijavu
+        </a>
+      )}
+
       {/* Separator */}
       <div className="w-16 h-px bg-zinc-700 my-8" />
 
