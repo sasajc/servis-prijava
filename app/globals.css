@@ -1,5 +1,49 @@
 @import "tailwindcss";
 
+/* Tekst na amber ploči (gumbi, aktivni koraci) ostaje bijel u obje teme */
+@theme {
+  --color-on-accent: #ffffff;
+}
+
+:root {
+  color-scheme: dark;
+  --logo-color: #f59e0b;
+}
+
+/*
+ * Svijetla tema: ista paleta, obrnuta ljestvica. Komponente koriste zinc/amber/red/green
+ * klase pa se tema mijenja samo ovdje. Postavlja je ThemeToggle (atribut data-theme na html).
+ */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --logo-color: #b45309;
+
+  --color-white: #18181b;
+  --color-zinc-950: #fafaf9;
+  --color-zinc-900: #ffffff;
+  --color-zinc-800: #f0f0f1;
+  --color-zinc-700: #d4d4d8;
+  --color-zinc-600: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-400: #52525b;
+  --color-zinc-300: #3f3f46;
+
+  --color-amber-950: #fef3c7;
+  --color-amber-900: #f59e0b;
+  --color-amber-800: #fcd34d;
+  --color-amber-200: #78350f;
+  --color-amber-400: #b45309;
+  --color-amber-500: #d97706;
+
+  --color-red-950: #fee2e2;
+  --color-red-900: #ef4444;
+  --color-red-800: #fca5a5;
+  --color-red-400: #dc2626;
+
+  --color-green-900: #22c55e;
+  --color-green-400: #15803d;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
   -webkit-tap-highlight-color: transparent;

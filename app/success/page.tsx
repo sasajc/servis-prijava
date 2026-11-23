@@ -29,7 +29,7 @@ export default async function SuccessPage({ searchParams }: Props) {
       {isVerified && (
         <a
           href={portalUrl}
-          className="mt-8 min-h-[56px] px-8 inline-flex items-center bg-amber-700 text-white font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
+          className="mt-8 min-h-[56px] px-8 inline-flex items-center bg-amber-700 text-on-accent font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
         >
           Pratite prijavu
         </a>

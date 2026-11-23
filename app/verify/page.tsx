@@ -29,7 +29,7 @@ function VerifyErrorUI({
       <p className="text-zinc-400 max-w-xs leading-relaxed mb-8">{message}</p>
       <a
         href={linkHref}
-        className="inline-block bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl hover:bg-amber-600 transition-colors"
+        className="inline-block bg-amber-700 text-on-accent font-semibold px-6 py-3 rounded-xl hover:bg-amber-600 transition-colors"
       >
         {linkLabel}
       </a>
