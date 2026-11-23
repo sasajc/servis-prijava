@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uputa: prijava kvara | LOGOKOD</title>
+<style>
+  @page { size: A4; margin: 0 }
+  * { box-sizing: border-box }
+  body { margin: 0; background: #e7e5e4; font-family: Arial, Helvetica, sans-serif; color: #1c1917; font-size: 13px; line-height: 1.5 }
+  .page { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; display: flex; flex-direction: column }
+  header { background: #09090b; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between }
+  header img { height: 34px; display: block }
+  header span { color: #a1a1aa; font-size: 12px; letter-spacing: 1px; text-transform: uppercase }
+  .hero { padding: 24px 28px 8px }
+  h1 { margin: 0 0 6px; font-size: 26px; color: #7a4f28 }
+  .lead { margin: 0; color: #57534e; font-size: 14px }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px 28px 0 }
+  .card { border: 1px solid #e7e5e4; border-radius: 12px; padding: 14px 16px }
+  .card h2 { margin: 0 0 10px; font-size: 15px; color: #7a4f28 }
+  .tag { display: inline-block; background: #fef3c7; color: #78350f; border-radius: 6px; padding: 1px 8px; font-size: 11px; font-weight: bold; margin-left: 6px }
+  ol { margin: 0; padding: 0; list-style: none; counter-reset: s }
+  ol li { counter-increment: s; position: relative; padding: 0 0 9px 30px }
+  ol li:before { content: counter(s); position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: #7a4f28; color: #fff; font-weight: bold; font-size: 12px; text-align: center; line-height: 22px }
+  ol li b { color: #1c1917 }
+  .wide { padding: 16px 28px 0 }
+  .track { background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 12px; padding: 14px 16px }
+  .track h2 { margin: 0 0 6px; font-size: 15px; color: #7a4f28 }
+  .track p { margin: 0 0 6px }
+  .faq { padding: 16px 28px 0 }
+  .faq h2 { margin: 0 0 8px; font-size: 15px; color: #7a4f28 }
+  .faq dt { font-weight: bold; margin-top: 8px }
+  .faq dd { margin: 0; color: #44403c }
+  .url { font-family: Consolas, monospace; background: #f5f5f4; border-radius: 4px; padding: 1px 5px; font-size: 12px }
+  footer { margin-top: auto; background: #f5f5f4; padding: 12px 28px; font-size: 11px; color: #78716c; display: flex; justify-content: space-between }
+  @media print { body { background: #fff } .page { box-shadow: none } }
+  @media (max-width: 700px) { .page { width: 100% } .cols { grid-template-columns: 1fr } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <img src="https://servis-prijava.logokod.hr/email-logo.png" alt="LOGOKOD">
+    <span>Servisna prijava</span>
+  </header>
+
+  <div class="hero">
+    <h1>Kako prijaviti kvar uređaja</h1>
+    <p class="lead">Dvije minute s mobitela. Bez instalacije, bez registracije i bez čekanja na telefonsku liniju.</p>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>Uređaj ima QR kod <span class="tag">najbrže</span></h2>
+      <ol>
+        <li><b>Skenirajte QR kod</b> na naljepnici uređaja kamerom mobitela.</li>
+        <li><b>Uređaj je već prepoznat.</b> Vidite njegov naziv i S/N na vrhu ekrana.</li>
+        <li><b>Snimite fotografiju kvara</b> i, ako želite, kratko opišite problem.</li>
+        <li><b>Upišite kontakt</b> (ime, prezime, mobitel i e-mail) i pošaljite prijavu.</li>
+        <li><b>Potvrdite e-mailom.</b> Kliknite „Potvrdi prijavu“ u poruci koju ste dobili.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Uređaj nema QR kod</h2>
+      <ol>
+        <li>Otvorite <span class="url">servis-prijava.logokod.hr</span> na mobitelu.</li>
+        <li><b>Upišite serijski broj (S/N)</b> s tipske pločice uređaja i dodirnite „Provjeri“.</li>
+        <li><b>Potvrdite uređaj</b> kad se prikaže naziv i poduzeće. Ako S/N nije pronađen, opišite uređaj riječima (poduzeće, naziv, lokacija).</li>
+        <li><b>Dalje je isto:</b> fotografija, opis, kontakt, slanje i potvrda e-mailom.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="wide">
+    <div class="track">
+      <h2>Pratite svoju prijavu</h2>
+      <p>Nakon potvrde dodirnite „Pratite prijavu“ ili otvorite <span class="url">app.logokod.hr/portal</span>. Upišite e-mail, unesite kod koji vam stigne i vidite status, zakazani termin, fotografiju i povijest svake prijave.</p>
+      <p style="margin:0;color:#78716c;font-size:12px">Napomena: prijave s poslovne e-mail adrese vidi cijela tvrtka (ista domena), a s privatne adrese (npr. Gmail) samo vi.</p>
+    </div>
+  </div>
+
+  <div class="faq">
+    <h2>Česta pitanja</h2>
+    <dl style="margin:0">
+      <dt>Nije stigao e-mail za potvrdu.</dt>
+      <dd>Pogledajte mapu za neželjenu poštu (spam). Link vrijedi 24 sata; ako je istekao, podnesite prijavu ponovno.</dd>
+      <dt>Prijava nije stigla servisu.</dt>
+      <dd>Servis je obaviješten tek nakon što kliknete „Potvrdi prijavu“ u e-mailu.</dd>
+      <dt>Ne mogu pronaći serijski broj.</dt>
+      <dd>Nastavite bez njega i opišite uređaj (tvrtka, naziv, lokacija). Servis će ga povezati ručno.</dd>
+      <dt>Je li fotografija obavezna?</dt>
+      <dd>Da, pomaže serviseru da se pripremi i dođe s pravim dijelovima.</dd>
+    </dl>
+  </div>
+
+  <footer>
+    <span>LOGOKOD d.o.o. · Padine 15, 10090 Zagreb</span>
+    <span>servisi@logokod.hr</span>
+  </footer>
+</div>
+</body>
+</html>
