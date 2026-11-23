@@ -5,6 +5,7 @@ interface Props {
 export default async function SuccessPage({ searchParams }: Props) {
   const { verified } = await searchParams
   const isVerified = verified === 'true'
+  const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://app.logokod.hr/portal'
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-6 text-center">
@@ -25,9 +26,9 @@ export default async function SuccessPage({ searchParams }: Props) {
           : 'Vaša prijava kvara je uspješno poslana. Servisni tim je obaviješten i kontaktirat će vas uskoro.'}
       </p>
 
-      {isVerified && process.env.NEXT_PUBLIC_PORTAL_URL && (
+      {isVerified && (
         <a
-          href={process.env.NEXT_PUBLIC_PORTAL_URL}
+          href={portalUrl}
           className="mt-8 min-h-[56px] px-8 inline-flex items-center bg-amber-700 text-white font-bold text-lg rounded-xl hover:bg-amber-600 transition-colors"
         >
           Pratite prijavu
